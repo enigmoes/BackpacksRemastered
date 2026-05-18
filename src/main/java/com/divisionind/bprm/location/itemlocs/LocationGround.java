@@ -39,7 +39,7 @@ public class LocationGround implements SurfaceLocation {
     @Override
     public void replace(ItemStack newItem, ItemStack surfaceItem) throws UnknownItemLocationException {
         List<Entity> entityList = lastWorld.getEntities();
-        entityList.removeIf(entity -> !entity.getType().equals(EntityType.DROPPED_ITEM));
+        entityList.removeIf(entity -> !entity.getType().equals(EntityType.ITEM));
 
         for (Entity ent : entityList) {
             Item item = (Item) ent;

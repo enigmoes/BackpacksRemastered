@@ -19,14 +19,14 @@
 package com.divisionind.bprm.nms.reflect;
 
 import com.divisionind.bprm.exceptions.FuzzyClassLookupException;
-import io.netty.util.internal.ConcurrentSet;
-import org.bukkit.Bukkit;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipFile;
+import org.bukkit.Bukkit;
 
 public class FuzzyClassResolver {
 
@@ -53,7 +53,7 @@ public class FuzzyClassResolver {
             throw new FuzzyClassLookupException("Failed to load server jar.", e);
         }
 
-        bukkitClasses = new ConcurrentSet<>();
+        bukkitClasses = Collections.newSetFromMap(new ConcurrentHashMap<>());
         serverZip.stream().parallel().forEach(zipEntry -> {
             String name = zipEntry.getName();
 
