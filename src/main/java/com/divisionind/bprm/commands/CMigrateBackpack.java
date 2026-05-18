@@ -76,7 +76,7 @@ public class CMigrateBackpack extends ACommand {
         ItemStack chestplate = p.getInventory().getChestplate();
 
         if (chestplate == null) {
-            respond(p, "&cNo tienes ningún backpack equipado como pechera.");
+            respond(p, "&cYou do not have a backpack equipped as a chestplate.");
             return;
         }
 
@@ -86,14 +86,14 @@ public class CMigrateBackpack extends ACommand {
             if (nmsCheck.hasNBT("backpack_type")) {
                 // Chestplate already migrated — still attempt to migrate feather keys
                 migrateFeatherKeys(p);
-                respond(p, "&eEste backpack ya está en el nuevo formato, no necesita migración.");
+                respond(p, "&eThis backpack is already in the new format, no migration needed.");
                 return;
             }
 
             // Try to read old NBT from the minecraft:custom_data DataComponent
             Object oldTag = getCustomDataTag(chestplate);
             if (oldTag == null || !tagContains(oldTag, "backpack_type")) {
-                respond(p, "&cLa pechera equipada no es un backpack del formato antiguo.");
+                respond(p, "&cThe equipped chestplate is not an old-format backpack.");
                 return;
             }
 
@@ -111,7 +111,7 @@ public class CMigrateBackpack extends ACommand {
 
             BackpackObject bpo = BackpackObject.getByType(backpackType);
             if (bpo == null) {
-                respond(p, "&cTipo de backpack desconocido (" + backpackType + "). No se puede migrar.");
+                respond(p, "&cUnknown backpack type (" + backpackType + "). Cannot migrate.");
                 return;
             }
 
@@ -124,12 +124,12 @@ public class CMigrateBackpack extends ACommand {
                 byte[] data = tagGetByteArray(oldTag, "backpack_data");
                 if (data != null && data.length > 0) {
                     nmsItem.setNBT(NBTType.BYTE_ARRAY, "backpack_data", data);
-                    respond(p, "&aBackpack &e" + bpo.name() + "&a migrado correctamente con su contenido.");
+                    respond(p, "&aBackpack &e" + bpo.name() + "&a successfully migrated with its contents.");
                 } else {
-                    respond(p, "&aBackpack &e" + bpo.name() + "&a migrado. &eContenido no recuperado (inventario vacío).");
+                    respond(p, "&aBackpack &e" + bpo.name() + "&a migrated. &eContents not recovered (empty inventory).");
                 }
             } else {
-                respond(p, "&aBackpack &e" + bpo.name() + "&a migrado correctamente.");
+                respond(p, "&aBackpack &e" + bpo.name() + "&a successfully migrated.");
             }
 
             // Update the chestplate slot with the migrated item
@@ -137,7 +137,7 @@ public class CMigrateBackpack extends ACommand {
             migrateFeatherKeys(p);
 
         } catch (Exception e) {
-            respond(p, "&cError al migrar el backpack. Revisa el log del servidor para más detalles.");
+            respond(p, "&cError migrating the backpack. Check the server log for details.");
             e.printStackTrace();
         }
     }
@@ -161,10 +161,10 @@ public class CMigrateBackpack extends ACommand {
             } catch (Exception ignored) {}
         }
         if (migratedKeys > 0) {
-            respond(p, "&aTambién se migró tu Backpack Key al nuevo formato.");
+            respond(p, "&aYour Backpack Key was also migrated to the new format.");
         } else if (!hasNewKey) {
             p.getInventory().addItem(BackpackRecipes.backpackKey.clone());
-            respond(p, "&eTambién se te ha dado una Backpack Key nueva (no se detectó ninguna).");
+            respond(p, "&eA new Backpack Key was given to you (none found in your inventory).");
         }
     }
 
