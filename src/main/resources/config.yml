@@ -1,0 +1,90 @@
+# the configuration version (do not change this)
+version: 9
+
+# What language to set the plugin to. You can compile the plugin to support any languages you wish. For more info, see the github.
+# Current included languages are: en (English), es (Spanish), it (Italian), fr (French), zh (Chinese), pl (Polish), de (German)
+language: en
+
+recipes:
+  small:
+    display_name: "&aSmall Backpack"
+    lore:
+      - "A small leather backpack for short trips."
+      - "9 slots of storage."
+    ingredients:
+      A: LEATHER
+      B: CHEST
+    shape:
+      - "AAA"
+      - "ABA"
+      - "AAA"
+  medium:
+    display_name: "&eMedium Backpack"
+    lore:
+      - "A sturdy backpack reinforced with copper."
+      - "27 slots of storage."
+    ingredients:
+      A: COPPER_INGOT
+      B: CHEST
+    shape:
+      - "AAA"
+      - "ABA"
+      - "AAA"
+  large:
+    display_name: "&bLarge Backpack"
+    lore:
+      - "A spacious backpack forged with iron."
+      - "45 slots of storage."
+    ingredients:
+      A: IRON_INGOT
+      B: CHEST
+    shape:
+      - "AAA"
+      - "ABA"
+      - "AAA"
+  extralarge:
+    display_name: "&5Extra Large Backpack"
+    lore:
+      - "A massive backpack crafted from diamond."
+      - "54 slots of storage."
+    ingredients:
+      A: DIAMOND
+      B: CHEST
+    shape:
+      - "AAA"
+      - "ABA"
+      - "AAA"
+  linked:
+    display_name: "&aLinked Backpack"
+    lore:
+      - "A mystical bag that links to any container"
+      - "you left-click with it."
+    ingredients:
+      A: DIAMOND
+      B: LEATHER
+      C: ENDER_EYE
+      D: IRON_INGOT
+    shape:
+      - "ADA"
+      - "BCB"
+      - "ADA"
+  ender:
+    display_name: "&aEnder Backpack"
+    lore:
+      - "An ender chest in convenient backpack form."
+    ingredients:
+      A: ENDER_EYE
+      B: OBSIDIAN
+      C: LEATHER
+    shape:
+      - "CBC"
+      - "BAB"
+      - "CBC"
+  backpack_key:
+    ingredients:
+      A: IRON_INGOT
+      B: FEATHER
+    shape:
+      - "  A"
+      - " BA"
+      - " AA"

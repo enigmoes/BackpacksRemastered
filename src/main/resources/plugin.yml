@@ -1,0 +1,74 @@
+name: BackpacksRemastered
+description: A remastered version of the popular backpacks plugin.
+main: com.divisionind.bprm.Backpacks
+version: @DivisionVersion@
+author: drew6017
+website: divisionind.com
+api-version: 1.21
+
+commands:
+  backpacks:
+    description: The main command for BackpacksRemastered.
+    aliases:
+      - bp
+    permission: backpacks.main
+    usage: /bp help
+
+permissions:
+  backpacks.*:
+    description: Gives access to all commands in BackpacksRemastered.
+    default: op
+  backpacks.main:
+    description: Gives generic access to commands from this plugin.
+    default: true
+  backpacks.help:
+    description: Gives access to the help command.
+    default: true
+  backpacks.info:
+    description: Allows players to use the info command.
+    default: true
+  backpacks.item.info:
+    description: Gives access to the item-info command.
+    default: op
+  backpacks.item.info.get:
+    description: Gives access to the item-info-get command.
+    default: op
+  backpacks.item.give:
+    description: Gives access to the item-give command.
+    default: op
+  backpacks.config.reload:
+    description: Allows one to reload the YML configuration.
+    default: op
+  backpacks.craft.small:
+    description: Allows one to craft the small backpack.
+    default: true
+  backpacks.craft.medium:
+    description: Allows one to craft the medium backpack.
+    default: true
+  backpacks.craft.large:
+    description: Allows one to craft the large backpack.
+    default: true
+  backpacks.craft.extralarge:
+    description: Allows one to craft the extra large backpack.
+    default: true
+  backpacks.craft.linked:
+    description: Allows one to craft the linked backpack.
+    default: true
+  backpacks.craft.ender:
+    description: Allows one to craft the ender backpack.
+    default: true
+  backpacks.link:
+    description: Allows a player to link a linked backpack to a chest.
+    default: true
+  backpacks.nest:
+    description: Allows players to put one backpack inside of another.
+    default: true
+  backpacks.materials:
+    description: Allows players to use the materials command.
+    default: true
+  backpacks.materials.search:
+    description: Allows players to use the materials-search command.
+    default: true
+  backpacks.migrate:
+    description: Allows players to migrate their equipped backpack from the old format.
+    default: true

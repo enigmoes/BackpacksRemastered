@@ -1,0 +1,188 @@
+/*
+ * BackpacksRemastered - remastered version of the popular Backpacks plugin
+ * Copyright (C) 2019 - 2020, Andrew Howard, <divisionind.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+
+import com.divisionind.i18n.DiscoveredString
+import com.divisionind.i18n.ExtractorPlugin
+import com.divisionind.i18n.GoogleTranslator
+import com.divisionind.i18n.api.FileScanUtils
+import com.divisionind.i18n.api.StringDecider
+import com.divisionind.i18n.api.corrector.RegexCorrectorMatcher
+import org.apache.tools.ant.filters.ReplaceTokens
+import org.gradle.internal.os.OperatingSystem
+
+import java.util.regex.Pattern
+
+buildscript {
+    repositories {
+        maven {
+            url 'https://raw.githubusercontent.com/divisionind/maven/repo'
+            //url uri('../maven') // local repo for testing
+        }
+    }
+    dependencies {
+        classpath group: 'com.divisionind',
+                name: 'i18nExtractor',
+                version: '2019.0.8'
+    }
+}
+
+plugins {
+    id 'java'
+}
+
+apply plugin: ExtractorPlugin
+
+def baseVersion = "2022.1.8"
+def beta = true
+
+def mcVersion = "1.17"
+def runningServerPluginsDir = System.env.DEV_SERVER
+
+group 'com.divisionind'
+sourceCompatibility = 1.8
+
+// git functions replaced with static values (no git repo required)
+def getGitHash = { -> return "nogit" }
+def getGitCommitNum = { shash -> return "0" }
+def getGitChanges = { shash -> return "" }
+
+// what format the version info should take
+version baseVersion + (beta ? "-beta.${getGitCommitNum('HEAD')}" : "")
+
+// generates sources by replacing these strings (surrounded by @, e.g. @DivisionVersion@)
+task generateSources(type: Copy) {
+    from 'src/main/java'
+    into "$buildDir/generated-src"
+
+    filter(ReplaceTokens, tokens: [
+            'DivisionVersion': project.version,
+            'DivisionGitHash': getGitHash(),
+            'DivisionGitComm': getGitCommitNum('HEAD')
+    ])
+}
+
+// generates resources by replacing these strings (surrounded by @, e.g. @DivisionVersion@)
+task generateResources(type: Copy) {
+    from 'src/main/resources'
+    into "$buildDir/generated-resources"
+
+    filter(ReplaceTokens, tokens: [
+            'DivisionVersion': project.version,
+            'DivisionGitHash': getGitHash(),
+            'DivisionGitComm': getGitCommitNum('HEAD')
+    ])
+}
+
+internationalize {
+    sourcesDir file("$buildDir/generated-src")
+    sourceResources file("$buildDir/generated-resources")
+    bundleInitializerClasspath 'com.divisionind.bprm.Backpacks'
+    cacheDirectory file("$projectDir/.i18nExtractor")
+
+    File commandsFile = file("$sourcesDir/com/divisionind/bprm/commands")
+    Pattern colorPat = Pattern.compile("(?i)" + String.valueOf('&') + "[0-9A-FK-OR]")
+    stringDecider new StringDecider() {
+        @Override
+        boolean shouldAdd(DiscoveredString st) {
+            // exclude the names of backpacks from this (for now)
+            if (st.value == '&9Backpacks &7&l>>&r ' || st.value == '&aLinked' || st.value == 'Players=%s&BackpacksVersion=%s') {
+                return false
+            }
+
+            // return yes for any colored string
+            if (colorPat.matcher(st.value).results().count() > 0) return true
+
+            // these string values are not colored and would not be picked up for translation otherwise
+            if (st.locationFile.getParentFile().equals(commandsFile)) {
+                String prevLine = FileScanUtils.getLine(st.locationFile, st.line)
+                return prevLine.contains("String desc()")
+            }
+        }
+    }
+    
+    // serializes color codes so they dont get messed with by the translator
+    translator = new GoogleTranslator(69, 10, new RegexCorrectorMatcher(colorPat), 
+            new RegexCorrectorMatcher(Pattern.compile("0x%02x", Pattern.LITERAL)),
+            new RegexCorrectorMatcher(Pattern.compile("%.2f", Pattern.LITERAL)))
+
+    langs('es', 'it', 'fr', 'zh-CN', 'pl', 'de')
+}
+// internationalize task skipped (i18nExtractor plugin incompatible with Gradle 8)
+// compileJava and processResources use generateSources/generateResources directly
+compileJava.dependsOn generateSources, generateResources
+processResources.dependsOn generateResources
+
+compileJava.setSource("$buildDir/generated-src")
+sourceSets.main.resources.setSrcDirs(["$buildDir/generated-resources"])
+processResources.dependsOn generateResources
+
+task makeJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': project.name,
+                'Implementation-Version': version
+    }
+    archiveBaseName = project.name
+    with jar
+}
+
+task pack(dependsOn: ['clean', 'makeJar'])
+makeJar.mustRunAfter clean
+
+def sourceJar = "build/libs/${project.name}-${project.version}.jar"
+def dstJar = runningServerPluginsDir == null ? null : "${runningServerPluginsDir}/${project.name}.jar"
+
+task update {
+    doLast {
+        if (dstJar == null) {
+            println "Error updating server jar. System environment variable DEV_SERVER was not specified."
+            return
+        }
+        println "moving $sourceJar => $dstJar"
+        OperatingSystem os = OperatingSystem.current()
+        if (os.isWindows()) {
+            exec {
+                commandLine "wsl", '--', "mv", "$sourceJar", "$dstJar"
+            }
+        } else
+        if (os.isLinux()) {
+            exec {
+                commandLine 'mv', sourceJar, dstJar
+            }
+        } else {
+            println 'This OS does not support real-time plugin updating.'
+            return
+        }
+        println 'Updated plugin on running server. Reload it now to see the changes.'
+    }
+}
+update.dependsOn pack
+
+repositories {
+    mavenCentral()
+
+    maven { url 'https://raw.githubusercontent.com/divisionind/maven/repo' }
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    compileOnly group: 'org.bukkit', name: 'craftbukkit', version: mcVersion
+    compileOnly group: 'com.github.GriefPrevention', name: 'GriefPrevention', version: '16.18.7'
+
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+}

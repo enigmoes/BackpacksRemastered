@@ -1,0 +1,66 @@
+/*
+ * BackpacksRemastered - remastered version of the popular Backpacks plugin
+ * Copyright (C) 2019, Andrew Howard, <divisionind.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package com.divisionind.bprm.backpacks;
+
+import com.divisionind.bprm.BackpackHandler;
+import com.divisionind.bprm.PotentialBackpackItem;
+import com.divisionind.bprm.UpdateItemCallback;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+
+public abstract class BPStorage extends BackpackHandler {
+
+    private final String title;
+    private final int size;
+
+    BPStorage(String title, int size) {
+        this.title = title;
+        this.size = size;
+    }
+
+    @Override
+    public Inventory openBackpack(Player p, PotentialBackpackItem backpack) throws Exception {
+        if (!backpack.hasData()) {
+            return Bukkit.getServer().createInventory(null, size, title);
+        }
+        Inventory stored = backpack.getDataAsInventory();
+        if (stored.getSize() == size) {
+            return stored;
+        }
+        // Stored size differs from handler size (e.g. type was resized between versions).
+        // Create a new inventory with the correct size and copy items over.
+        Inventory resized = Bukkit.getServer().createInventory(null, size, title);
+        int copyCount = Math.min(stored.getSize(), size);
+        for (int i = 0; i < copyCount; i++) {
+            ItemStack item = stored.getItem(i);
+            if (item != null) resized.setItem(i, item);
+        }
+        return resized;
+    }
+
+    @Override
+    public void onClose(InventoryCloseEvent e, PotentialBackpackItem backpack, UpdateItemCallback callback)
+            throws Exception {
+        backpack.setData(e.getInventory(), e.getView().getTitle());
+        callback.update(backpack.getModifiedItem());
+    }
+}
