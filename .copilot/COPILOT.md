@@ -74,12 +74,30 @@ El objetivo principal es eliminar la capa NMS legacy y rediseñar los tipos de m
 | `BPStorage.java` | `openBackpack()` redimensiona el inventario si el tamaño guardado difiere del handler (fix versiones antiguas) |
 | `BackpackCraftEvent.java` | Eliminada toda la lógica COMBINED; solo queda check de permiso |
 | `BackpackInvClickEvent.java` | Eliminada la delegación de clicks a BPCombined |
-| `CMigrateBackpack.java` | Remapeo de IDs + fix reflexión + migración de pluma-llave + método `migrateFeatherKeys()` |
+| `CMigrateBackpack.java` | Remapeo de IDs + fix reflexión + migración de pluma-llave + método `migrateFeatherKeys()` + **mensajes traducidos al inglés** |
 | `CInfo.java` | URL actualizada al nuevo repositorio (`enigmoes/BackpacksRemastered`) |
 | `config.yml` | Recetas completamente rediseñadas; versión subida a **9** |
 | `plugin.yml` | Permisos actualizados (añadidos medium/extralarge, eliminados combined/craft/furnace/split/vfurnace) |
 | `Backpacks.java` | Eliminados: `CVFurnace`, `CSplit`, `BackpackFurnaceTickEvent`, `BackpackTrackEvents`, `MAX_COMBINED_BACKPACKS` |
 | `README.md` | Actualizado con nuevo repo, nueva tabla de tipos, instrucciones para Windows |
+
+### 8. Modernización de dependencias y compilación final ✅
+
+- **`build.gradle`**: sustituido `org.bukkit:craftbukkit:1.17` (mirror privado de divisionind) por `org.spigotmc:spigot-api:1.21-R0.1-SNAPSHOT` del repositorio oficial `https://hub.spigotmc.org/nexus/content/repositories/snapshots/`
+- **`AlwaysPlayer.java`**: eliminado código NMS (`GameProfile`, `EntityPlayer`) que ya estaba roto en 1.21. Ahora usa solo `Bukkit.getPlayer(UUID)` para jugadores online; para offline usa `Bukkit.getOfflinePlayer(UUID).getName()`. Si el jugador está offline, `resolvePlayer()` devuelve `null` y `InventoryLocationPlayer` lanza `UnknownItemLocationException` (comportamiento ya manejado).
+- **`FuzzyClassResolver.java`**: `io.netty.util.internal.ConcurrentSet` (no disponible en spigot-api) reemplazado por `Collections.newSetFromMap(new ConcurrentHashMap<>())`. Import `org.bukkit.Bukkit` restaurado (se había eliminado accidentalmente).
+- **`LocationGround.java`**: `EntityType.DROPPED_ITEM` → `EntityType.ITEM` (renombrado en Spigot 1.20.5+).
+- **BUILD SUCCESSFUL**: `BackpacksRemastered-2.0.0.jar` generado correctamente (≈117 KB). Solo warnings de deprecación (`source value 8 obsolete`), sin errores.
+- **Release v2.0.0** publicada en GitHub con notas de release en inglés.
+
+### 7. Limpieza de i18nExtractor y versión 2.0.0 ✅
+
+- `build.gradle`: eliminados imports, buildscript, `apply plugin: ExtractorPlugin` y bloque `internationalize { }` del plugin privado `i18nExtractor` (incompatible con Gradle 8 y no disponible en este fork)
+- Directorio `.i18nExtractor` (cachés de Google Translate) eliminado del proyecto
+- `README.md`: eliminada sección "Añadir idiomas" y entrada del TOC correspondiente
+- `CMigrateBackpack.java`: mensajes al jugador traducidos de español a inglés (consistencia con el resto del plugin)
+- `baseVersion` cambiado de `"2022.1.8"` a `"2.0.0"`, `beta = false` → JAR final: `BackpacksRemastered-2.0.0.jar`
+- **Decisión i18n**: el sistema de traducciones se implementará en una versión futura (v2.1.0+) con ResourceBundle basado en claves. Por ahora el plugin es 100% inglés.
 
 ### 4. Archivos eliminados ✅
 - `BPCombined.java`
@@ -90,6 +108,7 @@ El objetivo principal es eliminar la capa NMS legacy y rediseñar los tipos de m
 - `BackpackFurnaceTickEvent.java`
 - `BackpackTrackEvents.java`
 - `Dockerfile` — entorno de compilación del autor original (Ubuntu+Java8/11), no necesario con Java 21 local
+- `.i18nExtractor/` — cachés de Google Translate del plugin privado eliminado
 
 ### 5. Correcciones de bugs ✅
 - NPE en `BackpackInvClickEvent` al hacer clic con ítem null o sin pechera equipada
@@ -120,6 +139,12 @@ Cada backpack tiene atributos de armadura propios que **reemplazan** los 3 punto
 Implementado con `AttributeModifier(UUID, String, double, ADD_NUMBER, EquipmentSlot.CHEST)` (API Bukkit 1.17, compatible con 1.21.11). UUID determinista por tipo via `UUID.nameUUIDFromBytes`.
 
 ---
+
+## Estado actual
+
+**v2.0.0 — BUILD SUCCESSFUL — Release publicada en GitHub**
+
+El JAR `build\libs\BackpacksRemastered-2.0.0.jar` compila sin errores con `.\gradlew.bat pack` (solo warnings de deprecación de Java 8 source/target, ignorables).
 
 ## Pendiente / En progreso
 
