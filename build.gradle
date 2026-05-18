@@ -17,41 +17,17 @@
  */
 
 
-import com.divisionind.i18n.DiscoveredString
-import com.divisionind.i18n.ExtractorPlugin
-import com.divisionind.i18n.GoogleTranslator
-import com.divisionind.i18n.api.FileScanUtils
-import com.divisionind.i18n.api.StringDecider
-import com.divisionind.i18n.api.corrector.RegexCorrectorMatcher
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.internal.os.OperatingSystem
-
-import java.util.regex.Pattern
-
-buildscript {
-    repositories {
-        maven {
-            url 'https://raw.githubusercontent.com/divisionind/maven/repo'
-            //url uri('../maven') // local repo for testing
-        }
-    }
-    dependencies {
-        classpath group: 'com.divisionind',
-                name: 'i18nExtractor',
-                version: '2019.0.8'
-    }
-}
 
 plugins {
     id 'java'
 }
 
-apply plugin: ExtractorPlugin
-
 def baseVersion = "2.0.0"
 def beta = false
 
-def mcVersion = "1.17"
+def mcVersion = "1.21-R0.1-SNAPSHOT"
 def runningServerPluginsDir = System.env.DEV_SERVER
 
 group 'com.divisionind'
@@ -89,42 +65,6 @@ task generateResources(type: Copy) {
     ])
 }
 
-internationalize {
-    sourcesDir file("$buildDir/generated-src")
-    sourceResources file("$buildDir/generated-resources")
-    bundleInitializerClasspath 'com.divisionind.bprm.Backpacks'
-    cacheDirectory file("$projectDir/.i18nExtractor")
-
-    File commandsFile = file("$sourcesDir/com/divisionind/bprm/commands")
-    Pattern colorPat = Pattern.compile("(?i)" + String.valueOf('&') + "[0-9A-FK-OR]")
-    stringDecider new StringDecider() {
-        @Override
-        boolean shouldAdd(DiscoveredString st) {
-            // exclude the names of backpacks from this (for now)
-            if (st.value == '&9Backpacks &7&l>>&r ' || st.value == '&aLinked' || st.value == 'Players=%s&BackpacksVersion=%s') {
-                return false
-            }
-
-            // return yes for any colored string
-            if (colorPat.matcher(st.value).results().count() > 0) return true
-
-            // these string values are not colored and would not be picked up for translation otherwise
-            if (st.locationFile.getParentFile().equals(commandsFile)) {
-                String prevLine = FileScanUtils.getLine(st.locationFile, st.line)
-                return prevLine.contains("String desc()")
-            }
-        }
-    }
-    
-    // serializes color codes so they dont get messed with by the translator
-    translator = new GoogleTranslator(69, 10, new RegexCorrectorMatcher(colorPat), 
-            new RegexCorrectorMatcher(Pattern.compile("0x%02x", Pattern.LITERAL)),
-            new RegexCorrectorMatcher(Pattern.compile("%.2f", Pattern.LITERAL)))
-
-    langs('es', 'it', 'fr', 'zh-CN', 'pl', 'de')
-}
-// internationalize task skipped (i18nExtractor plugin incompatible with Gradle 8)
-// compileJava and processResources use generateSources/generateResources directly
 compileJava.dependsOn generateSources, generateResources
 processResources.dependsOn generateResources
 
@@ -176,12 +116,12 @@ update.dependsOn pack
 repositories {
     mavenCentral()
 
-    maven { url 'https://raw.githubusercontent.com/divisionind/maven/repo' }
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    compileOnly group: 'org.bukkit', name: 'craftbukkit', version: mcVersion
+    compileOnly group: 'org.spigotmc', name: 'spigot-api', version: mcVersion
     compileOnly group: 'com.github.GriefPrevention', name: 'GriefPrevention', version: '16.18.7'
 
     testImplementation group: 'junit', name: 'junit', version: '4.12'
