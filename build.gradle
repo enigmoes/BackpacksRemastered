@@ -48,8 +48,8 @@ plugins {
 
 apply plugin: ExtractorPlugin
 
-def baseVersion = "2022.1.8"
-def beta = true
+def baseVersion = "2.0.0"
+def beta = false
 
 def mcVersion = "1.17"
 def runningServerPluginsDir = System.env.DEV_SERVER

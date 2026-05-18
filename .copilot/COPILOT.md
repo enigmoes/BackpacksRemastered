@@ -19,7 +19,7 @@ El objetivo principal es eliminar la capa NMS legacy y rediseñar los tipos de m
 | Java | JDK 21 (`C:\Program Files\Java\jdk-21.0.10`) |
 | Gradle | 8.5 |
 | Comando de build | `$env:JAVA_HOME = "C:\Program Files\Java\jdk-21.0.10"; $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"; .\gradlew.bat pack 2>&1` |
-| JAR de salida | `build\libs\BackpacksRemastered-2022.1.8-beta.0.jar` |
+| JAR de salida | `build\libs\BackpacksRemastered-2.0.0.jar` |
 | Plugin en servidor | `~/minecraft/spigot121/plugins/` (acceso via SCP/SFTP) |
 
 ---
